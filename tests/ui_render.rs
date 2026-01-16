@@ -1,4 +1,4 @@
-use butterlog::{render_rows, RowKind, RowPath, VisibleRow};
+use butterlog::{render_rows, RowKind, RowPath, SearchState, VisibleRow};
 use ratatui::backend::TestBackend;
 use ratatui::style::Modifier;
 use ratatui::Terminal;
@@ -43,7 +43,8 @@ fn renders_arrows_and_prefixes_with_highlight() {
 
     terminal
         .draw(|frame| {
-            render_rows(&rows, frame, 0);
+            let search = SearchState::new();
+            render_rows(&rows, frame, 0, &search);
         })
         .expect("draw");
 
@@ -84,7 +85,8 @@ fn renders_with_horizontal_scroll_offset() {
 
     terminal
         .draw(|frame| {
-            render_rows(&rows, frame, 2);
+            let search = SearchState::new();
+            render_rows(&rows, frame, 2, &search);
         })
         .expect("draw");
 
@@ -92,4 +94,39 @@ fn renders_with_horizontal_scroll_offset() {
     let line0 = row_text(buffer, 0, 6);
 
     assert!(line0.starts_with("ERR..."));
+}
+
+#[test]
+fn renders_search_prompt_and_buffer() {
+    let rows = vec![VisibleRow {
+        kind: RowKind::Partition,
+        path: RowPath(vec![0]),
+        depth: 0,
+        text: "ERR".to_string(),
+        line_count: 2,
+        expanded: false,
+        matches_self: false,
+        matches_descendants: false,
+        line_index: None,
+        is_selected: false,
+    }];
+
+    let backend = TestBackend::new(20, 5);
+    let mut terminal = Terminal::new(backend).expect("terminal");
+    let mut search = SearchState::new();
+    search.enter();
+    search.handle_key(crossterm::event::KeyCode::Char('e'));
+    search.handle_key(crossterm::event::KeyCode::Char('r'));
+    search.handle_key(crossterm::event::KeyCode::Char('r'));
+
+    terminal
+        .draw(|frame| {
+            render_rows(&rows, frame, 0, &search);
+        })
+        .expect("draw");
+
+    let buffer = terminal.backend().buffer();
+    let line4 = row_text(buffer, 4, 20);
+
+    assert!(line4.contains("Search: err"));
 }

@@ -2,7 +2,7 @@ use ratatui::prelude::*;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 
-use crate::{RowKind, VisibleRow};
+use crate::{InputMode, RowKind, SearchState, VisibleRow};
 
 fn row_display_text(row: &VisibleRow) -> String {
     let indent = "  ".repeat(row.depth);
@@ -26,7 +26,12 @@ pub fn max_row_width(rows: &[VisibleRow]) -> usize {
         .unwrap_or(0)
 }
 
-pub fn render_rows(rows: &[VisibleRow], frame: &mut Frame<'_>, horizontal_offset: u16) {
+pub fn render_rows(
+    rows: &[VisibleRow],
+    frame: &mut Frame<'_>,
+    horizontal_offset: u16,
+    search: &SearchState,
+) {
     let mut lines = Vec::new();
 
     for row in rows {
@@ -42,6 +47,23 @@ pub fn render_rows(rows: &[VisibleRow], frame: &mut Frame<'_>, horizontal_offset
         lines.push(Line::from(Span::styled(text, style)));
     }
 
+    let layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(1), Constraint::Length(1)])
+        .split(frame.size());
+
     let paragraph = Paragraph::new(lines).scroll((0, horizontal_offset));
-    frame.render_widget(paragraph, frame.size());
+    frame.render_widget(paragraph, layout[0]);
+
+    let (status_text, status_style) = if search.mode == InputMode::Search {
+        (
+            format!("Search: {}", search.buffer),
+            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
+        )
+    } else {
+        (String::new(), Style::default())
+    };
+    let status_line = Line::from(Span::styled(status_text, status_style));
+    let status = Paragraph::new(status_line);
+    frame.render_widget(status, layout[1]);
 }

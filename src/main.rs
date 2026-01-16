@@ -86,7 +86,7 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
         model.ui.clamp_horizontal(max_scroll);
 
         terminal.draw(|frame| {
-            butterlog::render_rows(&model.rows, frame, model.ui.horizontal_offset);
+            butterlog::render_rows(&model.rows, frame, model.ui.horizontal_offset, &model.ui.search);
         })?;
 
         if event::poll(Duration::from_millis(200))? {
