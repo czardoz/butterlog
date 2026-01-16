@@ -16,7 +16,7 @@ fn flattens_only_expanded_children() {
         "b".to_string(),
         "other".to_string(),
     ]);
-    let rows = flatten_partitions(&[root, other], &store, None);
+    let rows = flatten_partitions(&[root, other], &store, None, 0);
 
     let partition_rows: Vec<_> = rows
         .iter()

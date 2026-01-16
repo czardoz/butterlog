@@ -10,7 +10,7 @@ fn applies_search_and_updates_rows() {
     let store = LineStore::new(vec!["error here".to_string(), "all good".to_string()]);
     let term = SearchTerm::new("error");
 
-    let rows = apply_search(Some(&term), &mut partitions, &store);
+    let rows = apply_search(Some(&term), &mut partitions, &store, 0);
 
     assert!(partitions[0].matches_self);
     assert!(!partitions[1].matches_self);
@@ -25,7 +25,7 @@ fn clears_search_when_term_is_none() {
 
     let store = LineStore::new(vec!["error".to_string()]);
 
-    let rows = apply_search(None, &mut partitions, &store);
+    let rows = apply_search(None, &mut partitions, &store, 0);
 
     assert!(!partitions[0].matches_self);
     assert!(!partitions[0].matches_descendants);

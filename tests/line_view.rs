@@ -6,7 +6,7 @@ fn expanded_leaf_partition_shows_lines() {
     let mut partition = Partition::new("P".to_string(), vec![0, 1], 0);
     partition.expanded = true;
 
-    let rows = flatten_partitions(&[partition], &store, None);
+    let rows = flatten_partitions(&[partition], &store, None, 0);
 
     let line_rows: Vec<&str> = rows
         .iter()

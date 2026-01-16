@@ -7,7 +7,7 @@ use crossterm::event::KeyCode;
 fn slash_enters_search_mode() {
     let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
     let store = LineStore::new(vec!["a".to_string()]);
-    let rows = flatten_partitions(&partitions, &store, None);
+    let rows = flatten_partitions(&partitions, &store, None, 0);
     let mut state = UiState::new();
 
     handle_key_normal(KeyCode::Char('/'), &rows, &mut partitions, &mut state);

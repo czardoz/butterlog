@@ -20,12 +20,14 @@ pub struct VisibleRow {
     pub matches_self: bool,
     pub matches_descendants: bool,
     pub line_index: Option<usize>,
+    pub is_selected: bool,
 }
 
 pub fn flatten_partitions(
     partitions: &[Partition],
     line_store: &LineStore,
     term: Option<&SearchTerm>,
+    selected: usize,
 ) -> Vec<VisibleRow> {
     let mut rows = Vec::new();
     if partitions.is_empty() {
@@ -43,13 +45,20 @@ pub fn flatten_partitions(
                 matches_self: matches,
                 matches_descendants: false,
                 line_index: Some(idx),
+                is_selected: false,
             });
+        }
+        if let Some(row) = rows.get_mut(selected) {
+            row.is_selected = true;
         }
         return rows;
     }
     for (idx, partition) in partitions.iter().enumerate() {
         let path = RowPath(vec![idx]);
         flatten_partition(partition, &path, &mut rows, line_store, term);
+    }
+    if let Some(row) = rows.get_mut(selected) {
+        row.is_selected = true;
     }
     rows
 }
@@ -71,6 +80,7 @@ fn flatten_partition(
         matches_self: partition.matches_self,
         matches_descendants: partition.matches_descendants,
         line_index: None,
+        is_selected: false,
     });
 
     if partition.expanded {
@@ -89,6 +99,7 @@ fn flatten_partition(
                     matches_self: matches,
                     matches_descendants: false,
                     line_index: Some(line_idx),
+                    is_selected: false,
                 });
             }
         } else {

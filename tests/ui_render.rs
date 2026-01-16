@@ -22,6 +22,7 @@ fn renders_arrows_and_prefixes_with_highlight() {
             matches_self: false,
             matches_descendants: false,
             line_index: None,
+            is_selected: true,
         },
         VisibleRow {
             kind: RowKind::Partition,
@@ -33,6 +34,7 @@ fn renders_arrows_and_prefixes_with_highlight() {
             matches_self: true,
             matches_descendants: false,
             line_index: None,
+            is_selected: false,
         },
     ];
 
@@ -54,4 +56,7 @@ fn renders_arrows_and_prefixes_with_highlight() {
 
     let cell = buffer.get(2, 1);
     assert!(cell.style().add_modifier.contains(Modifier::BOLD));
+
+    let selected_cell = buffer.get(2, 0);
+    assert_eq!(selected_cell.style().bg, Some(ratatui::style::Color::DarkGray));
 }

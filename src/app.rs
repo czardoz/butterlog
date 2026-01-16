@@ -10,7 +10,7 @@ pub struct AppModel {
 
 impl AppModel {
     pub fn new(line_store: LineStore, partitions: Vec<Partition>) -> Self {
-        let rows = flatten_partitions(&partitions, &line_store, None);
+        let rows = flatten_partitions(&partitions, &line_store, None, 0);
         let ui = UiState::new();
         Self {
             line_store,

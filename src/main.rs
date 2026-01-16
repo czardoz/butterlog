@@ -75,6 +75,7 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
             model.ui.search.term.as_ref(),
             &mut model.partitions,
             &model.line_store,
+            model.ui.selected,
         );
 
         terminal.draw(|frame| {
@@ -109,10 +110,11 @@ fn refresh_rows(
     term: Option<&SearchTerm>,
     partitions: &mut [butterlog::Partition],
     line_store: &butterlog::LineStore,
+    selected: usize,
 ) -> Vec<butterlog::VisibleRow> {
     match term {
-        Some(term) => apply_search(Some(term), partitions, line_store),
-        None => apply_search(None, partitions, line_store),
+        Some(term) => apply_search(Some(term), partitions, line_store, selected),
+        None => apply_search(None, partitions, line_store, selected),
     }
 }
 

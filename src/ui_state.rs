@@ -139,12 +139,13 @@ pub fn apply_search(
     term: Option<&crate::SearchTerm>,
     partitions: &mut [crate::Partition],
     line_store: &crate::LineStore,
+    selected: usize,
 ) -> Vec<crate::VisibleRow> {
     match term {
         Some(term) => crate::mark_search_matches(partitions, line_store, term),
         None => clear_search_matches(partitions),
     }
-    crate::flatten_partitions(partitions, line_store, term)
+    crate::flatten_partitions(partitions, line_store, term, selected)
 }
 
 fn clear_search_matches(partitions: &mut [crate::Partition]) {
