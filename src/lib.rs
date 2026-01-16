@@ -7,6 +7,7 @@ mod line_sample;
 mod line_store;
 mod partition;
 mod prefix;
+mod search;
 
 pub use error::{AppError, AppResult};
 pub use estimate::estimate_total_lines;
@@ -17,3 +18,4 @@ pub use line_sample::{average_line_len, read_first_n_lines, LineSample};
 pub use line_store::LineStore;
 pub use partition::{build_top_level_partitions, split_partition, Partition};
 pub use prefix::prefix_of;
+pub use search::SearchTerm;
