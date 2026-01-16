@@ -28,6 +28,25 @@ pub fn flatten_partitions(
     term: Option<&SearchTerm>,
 ) -> Vec<VisibleRow> {
     let mut rows = Vec::new();
+    if partitions.is_empty() {
+        for (idx, line) in line_store.lines.iter().enumerate() {
+            let matches = term
+                .map(|term| term.matches_line(&line_store.normalized[idx]))
+                .unwrap_or(false);
+            rows.push(VisibleRow {
+                kind: RowKind::Line,
+                path: RowPath(Vec::new()),
+                depth: 0,
+                text: line.clone(),
+                line_count: 0,
+                expanded: false,
+                matches_self: matches,
+                matches_descendants: false,
+                line_index: Some(idx),
+            });
+        }
+        return rows;
+    }
     for (idx, partition) in partitions.iter().enumerate() {
         let path = RowPath(vec![idx]);
         flatten_partition(partition, &path, &mut rows, line_store, term);

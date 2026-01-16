@@ -15,12 +15,19 @@ pub fn build_partitions_from_file(
     let avg_len = average_line_len(&sample);
     let file_size = file_size_bytes(path)?;
     let estimated_lines = estimate_total_lines(file_size, avg_len);
-    let sample_count = sample.lines.len().max(1);
+    let sample_count = sample.lines.len();
+    let raw_target = (screen_height as usize).saturating_mul(2).max(1);
+    let lines = sample.lines;
+    let line_store = LineStore::new(lines);
+
+    if sample_count < raw_target {
+        return Ok((line_store, Vec::new()));
+    }
+
     let target_partitions = target_partition_count(sample_count, screen_height);
     let target_size = target_partition_size_for_screen(estimated_lines, target_partitions);
-    let prefix_len = choose_prefix_len(&sample.lines, target_partitions);
+    let prefix_len = choose_prefix_len(&line_store.lines, target_partitions);
 
-    let line_store = LineStore::new(sample.lines);
     let mut groups = group_by_prefix(&line_store.lines, prefix_len);
     if groups.len() < target_partitions {
         groups = split_groups_to_target(groups, target_partitions);
@@ -42,7 +49,7 @@ pub fn build_partitions_from_file_default(
 
 fn target_partition_count(sample_count: usize, screen_height: u16) -> usize {
     let target = (screen_height as usize).saturating_mul(2).max(1);
-    target.min(sample_count).max(1)
+    target.min(sample_count.max(1)).max(1)
 }
 
 fn target_partition_size_for_screen(estimated_lines: u64, target_partitions: usize) -> usize {
