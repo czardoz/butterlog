@@ -8,5 +8,9 @@ struct Args {
 }
 
 fn main() {
-    let _args = Args::parse();
+    let args = Args::parse();
+    if args.log_file.is_none() {
+        eprintln!("missing log file argument");
+        std::process::exit(1);
+    }
 }
