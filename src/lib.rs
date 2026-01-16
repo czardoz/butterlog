@@ -8,6 +8,7 @@ mod line_store;
 mod partition;
 mod prefix;
 mod search;
+mod ui;
 mod view;
 mod ui_state;
 
@@ -21,5 +22,6 @@ pub use line_store::LineStore;
 pub use partition::{build_top_level_partitions, split_partition, Partition};
 pub use prefix::prefix_of;
 pub use search::{mark_search_matches, SearchTerm};
+pub use ui::render_rows;
 pub use view::{flatten_partitions, toggle_expanded, RowPath, VisibleRow};
 pub use ui_state::UiState;
