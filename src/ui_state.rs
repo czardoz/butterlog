@@ -118,12 +118,17 @@ pub fn handle_key_normal(
 
     match key {
         crossterm::event::KeyCode::Up => state.move_up(rows.len()),
-        crossterm::event::KeyCode::Down => {
+        crossterm::event::KeyCode::Down => state.move_down(rows.len()),
+        crossterm::event::KeyCode::Char('e') => {
             let idx = state.selected.min(rows.len() - 1);
             if !rows[idx].expanded {
                 crate::toggle_expanded(partitions, &rows[idx].path);
-            } else {
-                state.move_down(rows.len());
+            }
+        }
+        crossterm::event::KeyCode::Char('c') => {
+            let idx = state.selected.min(rows.len() - 1);
+            if rows[idx].expanded {
+                crate::toggle_expanded(partitions, &rows[idx].path);
             }
         }
         _ => {}
