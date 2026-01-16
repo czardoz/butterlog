@@ -26,3 +26,10 @@ impl Partition {
         self.line_indices.len()
     }
 }
+
+pub fn build_top_level_partitions(groups: Vec<crate::Group>, depth: usize) -> Vec<Partition> {
+    groups
+        .into_iter()
+        .map(|group| Partition::new(group.prefix, group.line_indices, depth))
+        .collect()
+}
