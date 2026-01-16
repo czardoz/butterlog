@@ -1,4 +1,4 @@
-use butterlog::{render_rows, RowPath, VisibleRow};
+use butterlog::{render_rows, RowKind, RowPath, VisibleRow};
 use ratatui::backend::TestBackend;
 use ratatui::style::Modifier;
 use ratatui::Terminal;
@@ -13,22 +13,26 @@ fn row_text(buffer: &ratatui::buffer::Buffer, y: u16, width: u16) -> String {
 fn renders_arrows_and_prefixes_with_highlight() {
     let rows = vec![
         VisibleRow {
+            kind: RowKind::Partition,
             path: RowPath(vec![0]),
             depth: 0,
-            prefix: "ERR".to_string(),
+            text: "ERR".to_string(),
             line_count: 2,
             expanded: false,
             matches_self: false,
             matches_descendants: false,
+            line_index: None,
         },
         VisibleRow {
+            kind: RowKind::Partition,
             path: RowPath(vec![1]),
             depth: 1,
-            prefix: "INFO".to_string(),
+            text: "INFO".to_string(),
             line_count: 1,
             expanded: true,
             matches_self: true,
             matches_descendants: false,
+            line_index: None,
         },
     ];
 

@@ -1,10 +1,13 @@
-use butterlog::{flatten_partitions, handle_key_normal, InputMode, Partition, SearchTerm, UiState};
+use butterlog::{
+    flatten_partitions, handle_key_normal, InputMode, LineStore, Partition, SearchTerm, UiState,
+};
 use crossterm::event::KeyCode;
 
 #[test]
 fn slash_enters_search_mode() {
     let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
-    let rows = flatten_partitions(&partitions);
+    let store = LineStore::new(vec!["a".to_string()]);
+    let rows = flatten_partitions(&partitions, &store, None);
     let mut state = UiState::new();
 
     handle_key_normal(KeyCode::Char('/'), &rows, &mut partitions, &mut state);

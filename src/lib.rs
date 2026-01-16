@@ -27,5 +27,5 @@ pub use partition::{build_top_level_partitions, split_partition, Partition};
 pub use prefix::prefix_of;
 pub use search::{mark_search_matches, SearchTerm};
 pub use ui::render_rows;
-pub use view::{flatten_partitions, toggle_expanded, RowPath, VisibleRow};
+pub use view::{flatten_partitions, toggle_expanded, RowKind, RowPath, VisibleRow};
 pub use ui_state::{apply_search, handle_key_normal, InputMode, SearchState, UiState};

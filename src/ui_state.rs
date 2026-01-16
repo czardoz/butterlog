@@ -121,13 +121,13 @@ pub fn handle_key_normal(
         crossterm::event::KeyCode::Down => state.move_down(rows.len()),
         crossterm::event::KeyCode::Char('e') => {
             let idx = state.selected.min(rows.len() - 1);
-            if !rows[idx].expanded {
+            if rows[idx].kind == crate::RowKind::Partition && !rows[idx].expanded {
                 crate::toggle_expanded(partitions, &rows[idx].path);
             }
         }
         crossterm::event::KeyCode::Char('c') => {
             let idx = state.selected.min(rows.len() - 1);
-            if rows[idx].expanded {
+            if rows[idx].kind == crate::RowKind::Partition && rows[idx].expanded {
                 crate::toggle_expanded(partitions, &rows[idx].path);
             }
         }
@@ -144,7 +144,7 @@ pub fn apply_search(
         Some(term) => crate::mark_search_matches(partitions, line_store, term),
         None => clear_search_matches(partitions),
     }
-    crate::flatten_partitions(partitions)
+    crate::flatten_partitions(partitions, line_store, term)
 }
 
 fn clear_search_matches(partitions: &mut [crate::Partition]) {

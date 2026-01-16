@@ -8,6 +8,6 @@ fn app_model_initializes_rows_and_ui() {
     let model = AppModel::new(store, partitions);
 
     assert_eq!(model.rows.len(), 1);
-    assert_eq!(model.rows[0].prefix, "A");
+    assert_eq!(model.rows[0].text, "A");
     assert_eq!(model.ui.selected, 0);
 }

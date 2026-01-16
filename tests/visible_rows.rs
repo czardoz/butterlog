@@ -1,4 +1,4 @@
-use butterlog::{flatten_partitions, Partition, RowPath};
+use butterlog::{flatten_partitions, LineStore, Partition, RowKind, RowPath};
 
 #[test]
 fn flattens_only_expanded_children() {
@@ -10,13 +10,24 @@ fn flattens_only_expanded_children() {
     let mut other = Partition::new("OTHER".to_string(), vec![3], 0);
     other.expanded = false;
 
-    let rows = flatten_partitions(&[root, other]);
+    let store = LineStore::new(vec![
+        "root".to_string(),
+        "a".to_string(),
+        "b".to_string(),
+        "other".to_string(),
+    ]);
+    let rows = flatten_partitions(&[root, other], &store, None);
 
-    let prefixes: Vec<&str> = rows.iter().map(|r| r.prefix.as_str()).collect();
+    let partition_rows: Vec<_> = rows
+        .iter()
+        .filter(|row| row.kind == RowKind::Partition)
+        .collect();
+
+    let prefixes: Vec<&str> = partition_rows.iter().map(|r| r.text.as_str()).collect();
     assert_eq!(prefixes, vec!["ROOT", "A", "B", "OTHER"]);
 
-    assert_eq!(rows[0].path, RowPath(vec![0]));
-    assert_eq!(rows[1].path, RowPath(vec![0, 0]));
-    assert_eq!(rows[2].path, RowPath(vec![0, 1]));
-    assert_eq!(rows[3].path, RowPath(vec![1]));
+    assert_eq!(partition_rows[0].path, RowPath(vec![0]));
+    assert_eq!(partition_rows[1].path, RowPath(vec![0, 0]));
+    assert_eq!(partition_rows[2].path, RowPath(vec![0, 1]));
+    assert_eq!(partition_rows[3].path, RowPath(vec![1]));
 }

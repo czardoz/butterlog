@@ -2,15 +2,20 @@ use ratatui::prelude::*;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 
-use crate::VisibleRow;
+use crate::{RowKind, VisibleRow};
 
 pub fn render_rows(rows: &[VisibleRow], frame: &mut Frame<'_>) {
     let mut lines = Vec::new();
 
     for row in rows {
         let indent = "  ".repeat(row.depth);
-        let arrow = if row.expanded { "v" } else { ">" };
-        let text = format!("{indent}{arrow} {}", row.prefix);
+        let text = match row.kind {
+            RowKind::Partition => {
+                let arrow = if row.expanded { "v" } else { ">" };
+                format!("{indent}{arrow} {}", row.text)
+            }
+            RowKind::Line => format!("{indent}- {}", row.text),
+        };
         let style = if row.matches_self || row.matches_descendants {
             Style::default().add_modifier(Modifier::BOLD)
         } else {
