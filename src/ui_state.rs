@@ -1,11 +1,78 @@
+use crate::SearchTerm;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InputMode {
+    Normal,
+    Search,
+}
+
+#[derive(Debug)]
+pub struct SearchState {
+    pub mode: InputMode,
+    pub buffer: String,
+    pub term: Option<SearchTerm>,
+}
+
+impl SearchState {
+    pub fn new() -> Self {
+        Self {
+            mode: InputMode::Normal,
+            buffer: String::new(),
+            term: None,
+        }
+    }
+
+    pub fn enter(&mut self) {
+        self.mode = InputMode::Search;
+        self.buffer.clear();
+    }
+
+    pub fn handle_key(&mut self, key: crossterm::event::KeyCode) {
+        if self.mode != InputMode::Search {
+            return;
+        }
+
+        match key {
+            crossterm::event::KeyCode::Char(ch) => self.buffer.push(ch),
+            crossterm::event::KeyCode::Backspace => {
+                self.buffer.pop();
+            }
+            crossterm::event::KeyCode::Enter => {
+                if !self.buffer.is_empty() {
+                    self.term = Some(SearchTerm::new(&self.buffer));
+                }
+                self.buffer.clear();
+                self.mode = InputMode::Normal;
+            }
+            crossterm::event::KeyCode::Esc => {
+                self.buffer.clear();
+                self.mode = InputMode::Normal;
+            }
+            _ => {}
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct UiState {
     pub selected: usize,
+    pub search: SearchState,
 }
 
 impl UiState {
     pub fn new() -> Self {
-        Self { selected: 0 }
+        Self {
+            selected: 0,
+            search: SearchState::new(),
+        }
+    }
+
+    pub fn enter_search_mode(&mut self) {
+        self.search.enter();
+    }
+
+    pub fn handle_search_key(&mut self, key: crossterm::event::KeyCode) {
+        self.search.handle_key(key);
     }
 
     pub fn move_up(&mut self, max: usize) {
@@ -35,6 +102,10 @@ pub fn handle_key_normal(
     partitions: &mut [crate::Partition],
     state: &mut UiState,
 ) {
+    if key == crossterm::event::KeyCode::Char('/') {
+        state.enter_search_mode();
+        return;
+    }
     if rows.is_empty() {
         return;
     }
