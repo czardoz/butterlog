@@ -123,3 +123,23 @@ pub fn handle_key_normal(
         _ => {}
     }
 }
+
+pub fn apply_search(
+    term: Option<&crate::SearchTerm>,
+    partitions: &mut [crate::Partition],
+    line_store: &crate::LineStore,
+) -> Vec<crate::VisibleRow> {
+    match term {
+        Some(term) => crate::mark_search_matches(partitions, line_store, term),
+        None => clear_search_matches(partitions),
+    }
+    crate::flatten_partitions(partitions)
+}
+
+fn clear_search_matches(partitions: &mut [crate::Partition]) {
+    for partition in partitions {
+        partition.matches_self = false;
+        partition.matches_descendants = false;
+        clear_search_matches(&mut partition.children);
+    }
+}
