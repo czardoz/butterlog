@@ -24,4 +24,4 @@ pub use prefix::prefix_of;
 pub use search::{mark_search_matches, SearchTerm};
 pub use ui::render_rows;
 pub use view::{flatten_partitions, toggle_expanded, RowPath, VisibleRow};
-pub use ui_state::UiState;
+pub use ui_state::{handle_key_normal, UiState};
