@@ -18,4 +18,4 @@ pub use line_sample::{average_line_len, read_first_n_lines, LineSample};
 pub use line_store::LineStore;
 pub use partition::{build_top_level_partitions, split_partition, Partition};
 pub use prefix::prefix_of;
-pub use search::SearchTerm;
+pub use search::{mark_search_matches, SearchTerm};
