@@ -100,11 +100,11 @@ impl UiState {
     }
 
     pub fn scroll_left(&mut self) {
-        self.horizontal_offset = self.horizontal_offset.saturating_sub(1);
+        self.horizontal_offset = self.horizontal_offset.saturating_sub(4);
     }
 
     pub fn scroll_right(&mut self) {
-        self.horizontal_offset = self.horizontal_offset.saturating_add(1);
+        self.horizontal_offset = self.horizontal_offset.saturating_add(4);
     }
 
     pub fn clamp_horizontal(&mut self, max_offset: u16) {

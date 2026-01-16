@@ -48,7 +48,7 @@ fn right_scrolls_horizontally() {
 
     handle_key_normal(KeyCode::Right, &rows, &mut partitions, &mut state);
 
-    assert_eq!(state.horizontal_offset, 1);
+    assert_eq!(state.horizontal_offset, 4);
 }
 
 #[test]
@@ -63,5 +63,5 @@ fn left_scrolls_horizontally_but_not_below_zero() {
 
     state.horizontal_offset = 2;
     handle_key_normal(KeyCode::Left, &rows, &mut partitions, &mut state);
-    assert_eq!(state.horizontal_offset, 1);
+    assert_eq!(state.horizontal_offset, 0);
 }
