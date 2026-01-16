@@ -20,13 +20,13 @@ pub fn render_rows(rows: &[VisibleRow], frame: &mut Frame<'_>) {
             }
             RowKind::Line => format!("{indent}- {}", row.text),
         };
-        let mut style = if row.matches_self || row.matches_descendants {
-            Style::default().add_modifier(Modifier::BOLD)
-        } else {
-            Style::default()
-        };
+        let mut style = Style::default();
+        let is_match = row.matches_self || row.matches_descendants;
+        if is_match {
+            style = style.add_modifier(Modifier::BOLD).bg(Color::Blue);
+        }
         if row.is_selected {
-            style = style.bg(Color::DarkGray);
+            style = style.bg(if is_match { Color::Magenta } else { Color::DarkGray });
         }
         lines.push(Line::from(Span::styled(text, style)));
     }

@@ -59,4 +59,7 @@ fn renders_arrows_and_prefixes_with_highlight() {
 
     let selected_cell = buffer.get(2, 0);
     assert_eq!(selected_cell.style().bg, Some(ratatui::style::Color::DarkGray));
+
+    let matched_cell = buffer.get(2, 1);
+    assert_eq!(matched_cell.style().bg, Some(ratatui::style::Color::Blue));
 }
