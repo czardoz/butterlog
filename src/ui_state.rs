@@ -57,6 +57,7 @@ impl SearchState {
 pub struct UiState {
     pub selected: usize,
     pub search: SearchState,
+    pub should_quit: bool,
 }
 
 impl UiState {
@@ -64,6 +65,7 @@ impl UiState {
         Self {
             selected: 0,
             search: SearchState::new(),
+            should_quit: false,
         }
     }
 
@@ -104,6 +106,10 @@ pub fn handle_key_normal(
 ) {
     if key == crossterm::event::KeyCode::Char('/') {
         state.enter_search_mode();
+        return;
+    }
+    if key == crossterm::event::KeyCode::Char('q') {
+        state.should_quit = true;
         return;
     }
     if rows.is_empty() {
