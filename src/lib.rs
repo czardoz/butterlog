@@ -8,6 +8,7 @@ mod line_store;
 mod partition;
 mod prefix;
 mod search;
+mod view;
 
 pub use error::{AppError, AppResult};
 pub use estimate::estimate_total_lines;
@@ -19,3 +20,4 @@ pub use line_store::LineStore;
 pub use partition::{build_top_level_partitions, split_partition, Partition};
 pub use prefix::prefix_of;
 pub use search::{mark_search_matches, SearchTerm};
+pub use view::{flatten_partitions, RowPath, VisibleRow};
