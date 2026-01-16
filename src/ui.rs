@@ -12,7 +12,11 @@ pub fn render_rows(rows: &[VisibleRow], frame: &mut Frame<'_>) {
         let text = match row.kind {
             RowKind::Partition => {
                 let arrow = if row.expanded { "v" } else { ">" };
-                format!("{indent}{arrow} {}", row.text)
+                let mut label = row.text.clone();
+                if !label.ends_with("...") {
+                    label.push_str("...");
+                }
+                format!("{indent}{arrow} {}", label)
             }
             RowKind::Line => format!("{indent}- {}", row.text),
         };

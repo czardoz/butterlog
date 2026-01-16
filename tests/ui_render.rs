@@ -49,8 +49,8 @@ fn renders_arrows_and_prefixes_with_highlight() {
     let line0 = row_text(buffer, 0, 20);
     let line1 = row_text(buffer, 1, 20);
 
-    assert!(line0.contains("> ERR"));
-    assert!(line1.contains("  v INFO"));
+    assert!(line0.contains("> ERR..."));
+    assert!(line1.contains("  v INFO..."));
 
     let cell = buffer.get(2, 1);
     assert!(cell.style().add_modifier.contains(Modifier::BOLD));

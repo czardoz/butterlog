@@ -9,8 +9,8 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 
 use butterlog::{
-    apply_search, build_partitions_from_file, handle_key_normal, AppError, AppModel, InputMode,
-    SearchTerm,
+    apply_search, build_partitions_from_file, build_partitions_from_file_default,
+    handle_key_normal, AppError, AppModel, InputMode, SearchTerm,
 };
 
 #[derive(Parser, Debug)]
@@ -58,7 +58,8 @@ fn validate_path(path: &PathBuf) -> Result<(), AppError> {
 }
 
 fn run_ui(path: &PathBuf) -> Result<(), AppError> {
-    let (line_store, partitions) = build_partitions_from_file(path)?;
+    let (_, screen_height) = crossterm::terminal::size()?;
+    let (line_store, partitions) = build_partitions_from_file(path, screen_height)?;
     let mut model = AppModel::new(line_store, partitions);
 
     enable_raw_mode()?;
@@ -99,7 +100,7 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
 }
 
 fn run_no_ui(path: &PathBuf) -> Result<(), AppError> {
-    let (_store, partitions) = build_partitions_from_file(path)?;
+    let (_store, partitions) = build_partitions_from_file_default(path)?;
     println!("partitions: {}", partitions.len());
     Ok(())
 }

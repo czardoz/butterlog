@@ -10,7 +10,7 @@ fn builds_partitions_from_file() {
     writeln!(file, "INFO three").unwrap();
     file.flush().unwrap();
 
-    let (store, partitions) = build_partitions_from_file(file.path()).expect("pipeline");
+    let (store, partitions) = build_partitions_from_file(file.path(), 10).expect("pipeline");
 
     assert!(!partitions.is_empty());
     assert_eq!(store.lines.len(), 3);

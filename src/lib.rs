@@ -16,7 +16,9 @@ mod ui_state;
 
 pub use error::{AppError, AppResult};
 pub use app::AppModel;
-pub use pipeline::build_partitions_from_file;
+pub use pipeline::{
+    build_partitions_from_file, build_partitions_from_file_default, DEFAULT_SCREEN_HEIGHT,
+};
 pub use estimate::estimate_total_lines;
 pub use file_size::file_size_bytes;
 pub use grouping::{group_by_prefix, Group};
