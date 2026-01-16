@@ -8,6 +8,14 @@ pub struct LineSample {
     pub lines: Vec<String>,
 }
 
+pub fn average_line_len(sample: &LineSample) -> usize {
+    if sample.lines.is_empty() {
+        return 0;
+    }
+    let total: usize = sample.lines.iter().map(|line| line.len()).sum();
+    total / sample.lines.len()
+}
+
 pub fn read_first_n_lines(path: &Path, n: usize) -> AppResult<LineSample> {
     let file = std::fs::File::open(path)?;
     let reader = io::BufReader::new(file);
