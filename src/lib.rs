@@ -8,11 +8,13 @@ mod line_store;
 mod partition;
 mod prefix;
 mod search;
+mod app;
 mod ui;
 mod view;
 mod ui_state;
 
 pub use error::{AppError, AppResult};
+pub use app::AppModel;
 pub use estimate::estimate_total_lines;
 pub use file_size::file_size_bytes;
 pub use grouping::{group_by_prefix, Group};
