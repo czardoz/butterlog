@@ -9,8 +9,8 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 
 use butterlog::{
-    apply_search, build_partitions_from_file, build_partitions_from_file_default,
-    handle_key_normal, AppError, AppModel, InputMode, SearchTerm,
+    apply_search, build_partitions_from_file, build_partitions_from_file_default, handle_key_normal,
+    max_row_width, AppError, AppModel, InputMode, SearchTerm,
 };
 
 #[derive(Parser, Debug)]
@@ -78,8 +78,15 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
             model.ui.selected,
         );
 
+        let term_width = terminal.size()?.width as usize;
+        let max_width = max_row_width(&model.rows);
+        let max_scroll = max_width
+            .saturating_sub(term_width)
+            .min(u16::MAX as usize) as u16;
+        model.ui.clamp_horizontal(max_scroll);
+
         terminal.draw(|frame| {
-            butterlog::render_rows(&model.rows, frame);
+            butterlog::render_rows(&model.rows, frame, model.ui.horizontal_offset);
         })?;
 
         if event::poll(Duration::from_millis(200))? {
@@ -91,6 +98,8 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
                 }
             }
         }
+
+        model.ui.clamp_horizontal(max_scroll);
 
         if model.ui.should_quit {
             break;

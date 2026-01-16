@@ -38,3 +38,30 @@ fn c_collapses_selected_row() {
 
     assert!(!partitions[0].expanded);
 }
+
+#[test]
+fn right_scrolls_horizontally() {
+    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
+    let store = LineStore::new(vec!["a".to_string()]);
+    let rows = flatten_partitions(&partitions, &store, None, 0);
+    let mut state = UiState::new();
+
+    handle_key_normal(KeyCode::Right, &rows, &mut partitions, &mut state);
+
+    assert_eq!(state.horizontal_offset, 1);
+}
+
+#[test]
+fn left_scrolls_horizontally_but_not_below_zero() {
+    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
+    let store = LineStore::new(vec!["a".to_string()]);
+    let rows = flatten_partitions(&partitions, &store, None, 0);
+    let mut state = UiState::new();
+
+    handle_key_normal(KeyCode::Left, &rows, &mut partitions, &mut state);
+    assert_eq!(state.horizontal_offset, 0);
+
+    state.horizontal_offset = 2;
+    handle_key_normal(KeyCode::Left, &rows, &mut partitions, &mut state);
+    assert_eq!(state.horizontal_offset, 1);
+}

@@ -56,6 +56,7 @@ impl SearchState {
 #[derive(Debug)]
 pub struct UiState {
     pub selected: usize,
+    pub horizontal_offset: u16,
     pub search: SearchState,
     pub should_quit: bool,
 }
@@ -64,6 +65,7 @@ impl UiState {
     pub fn new() -> Self {
         Self {
             selected: 0,
+            horizontal_offset: 0,
             search: SearchState::new(),
             should_quit: false,
         }
@@ -94,6 +96,20 @@ impl UiState {
         }
         if self.selected + 1 < max {
             self.selected += 1;
+        }
+    }
+
+    pub fn scroll_left(&mut self) {
+        self.horizontal_offset = self.horizontal_offset.saturating_sub(1);
+    }
+
+    pub fn scroll_right(&mut self) {
+        self.horizontal_offset = self.horizontal_offset.saturating_add(1);
+    }
+
+    pub fn clamp_horizontal(&mut self, max_offset: u16) {
+        if self.horizontal_offset > max_offset {
+            self.horizontal_offset = max_offset;
         }
     }
 }
@@ -131,6 +147,8 @@ pub fn handle_key_normal(
                 crate::toggle_expanded(partitions, &rows[idx].path);
             }
         }
+        crossterm::event::KeyCode::Left => state.scroll_left(),
+        crossterm::event::KeyCode::Right => state.scroll_right(),
         _ => {}
     }
 }

@@ -43,7 +43,7 @@ fn renders_arrows_and_prefixes_with_highlight() {
 
     terminal
         .draw(|frame| {
-            render_rows(&rows, frame);
+            render_rows(&rows, frame, 0);
         })
         .expect("draw");
 
@@ -62,4 +62,34 @@ fn renders_arrows_and_prefixes_with_highlight() {
 
     let matched_cell = buffer.get(2, 1);
     assert_eq!(matched_cell.style().bg, Some(ratatui::style::Color::Blue));
+}
+
+#[test]
+fn renders_with_horizontal_scroll_offset() {
+    let rows = vec![VisibleRow {
+        kind: RowKind::Partition,
+        path: RowPath(vec![0]),
+        depth: 0,
+        text: "ERR".to_string(),
+        line_count: 2,
+        expanded: false,
+        matches_self: false,
+        matches_descendants: false,
+        line_index: None,
+        is_selected: false,
+    }];
+
+    let backend = TestBackend::new(10, 3);
+    let mut terminal = Terminal::new(backend).expect("terminal");
+
+    terminal
+        .draw(|frame| {
+            render_rows(&rows, frame, 2);
+        })
+        .expect("draw");
+
+    let buffer = terminal.backend().buffer();
+    let line0 = row_text(buffer, 0, 6);
+
+    assert!(line0.starts_with("ERR..."));
 }
