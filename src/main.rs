@@ -18,6 +18,9 @@ use butterlog::{
 struct Args {
     /// Path to the log file
     log_file: Option<String>,
+    /// Run the pipeline without launching the TUI
+    #[arg(long)]
+    no_ui: bool,
 }
 
 fn main() {
@@ -33,7 +36,11 @@ fn run() -> Result<(), AppError> {
     let path = PathBuf::from(log_file);
     validate_path(&path)?;
 
-    run_ui(&path)
+    if args.no_ui {
+        run_no_ui(&path)
+    } else {
+        run_ui(&path)
+    }
 }
 
 fn validate_path(path: &PathBuf) -> Result<(), AppError> {
@@ -88,6 +95,12 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
         }
     }
 
+    Ok(())
+}
+
+fn run_no_ui(path: &PathBuf) -> Result<(), AppError> {
+    let (_store, partitions) = build_partitions_from_file(path)?;
+    println!("partitions: {}", partitions.len());
     Ok(())
 }
 
