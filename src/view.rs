@@ -42,3 +42,21 @@ fn flatten_partition(partition: &Partition, path: RowPath, rows: &mut Vec<Visibl
         }
     }
 }
+
+pub fn toggle_expanded(partitions: &mut [Partition], path: &RowPath) {
+    toggle_at_path(partitions, &path.0);
+}
+
+fn toggle_at_path(partitions: &mut [Partition], path: &[usize]) -> bool {
+    let Some((&idx, rest)) = path.split_first() else {
+        return false;
+    };
+    if idx >= partitions.len() {
+        return false;
+    }
+    if rest.is_empty() {
+        partitions[idx].expanded = !partitions[idx].expanded;
+        return true;
+    }
+    toggle_at_path(&mut partitions[idx].children, rest)
+}

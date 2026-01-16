@@ -21,5 +21,5 @@ pub use line_store::LineStore;
 pub use partition::{build_top_level_partitions, split_partition, Partition};
 pub use prefix::prefix_of;
 pub use search::{mark_search_matches, SearchTerm};
-pub use view::{flatten_partitions, RowPath, VisibleRow};
+pub use view::{flatten_partitions, toggle_expanded, RowPath, VisibleRow};
 pub use ui_state::UiState;
