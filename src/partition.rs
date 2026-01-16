@@ -48,19 +48,21 @@ pub fn split_partition(
         return;
     }
 
-    let next_prefix_len = prefix_len + 1;
-    let mut groups: Vec<(String, Vec<usize>)> = Vec::new();
-    let mut index_map: HashMap<String, usize> = HashMap::new();
+    let max_len = partition
+        .line_indices
+        .iter()
+        .map(|&idx| lines[idx].chars().count())
+        .max()
+        .unwrap_or(0);
 
-    for &line_idx in &partition.line_indices {
-        let prefix = prefix_of(&lines[line_idx], next_prefix_len);
-        if let Some(&group_idx) = index_map.get(&prefix) {
-            groups[group_idx].1.push(line_idx);
-        } else {
-            let group_idx = groups.len();
-            groups.push((prefix.clone(), vec![line_idx]));
-            index_map.insert(prefix, group_idx);
+    let mut candidate_len = prefix_len + 1;
+    let mut groups = Vec::new();
+    while candidate_len <= max_len {
+        groups = group_indices_by_prefix(&partition.line_indices, lines, candidate_len);
+        if groups.len() > 1 {
+            break;
         }
+        candidate_len += 1;
     }
 
     if groups.len() <= 1 {
@@ -73,6 +75,28 @@ pub fn split_partition(
         .collect();
 
     for child in &mut partition.children {
-        split_partition(child, lines, next_prefix_len, target_size);
+        split_partition(child, lines, candidate_len, target_size);
     }
+}
+
+fn group_indices_by_prefix(
+    indices: &[usize],
+    lines: &[String],
+    prefix_len: usize,
+) -> Vec<(String, Vec<usize>)> {
+    let mut groups: Vec<(String, Vec<usize>)> = Vec::new();
+    let mut index_map: HashMap<String, usize> = HashMap::new();
+
+    for &line_idx in indices {
+        let prefix = prefix_of(&lines[line_idx], prefix_len);
+        if let Some(&group_idx) = index_map.get(&prefix) {
+            groups[group_idx].1.push(line_idx);
+        } else {
+            let group_idx = groups.len();
+            groups.push((prefix.clone(), vec![line_idx]));
+            index_map.insert(prefix, group_idx);
+        }
+    }
+
+    groups
 }

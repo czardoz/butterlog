@@ -1,4 +1,4 @@
-use butterlog::{build_top_level_partitions, group_by_prefix, split_partition};
+use butterlog::{build_top_level_partitions, group_by_prefix, split_partition, Partition};
 
 #[test]
 fn splits_large_partitions_with_longer_prefixes() {
@@ -26,4 +26,23 @@ fn splits_large_partitions_with_longer_prefixes() {
 
     let info_partition = &partitions[1];
     assert!(info_partition.children.is_empty());
+}
+
+#[test]
+fn splits_when_next_prefix_is_same_but_longer_differs() {
+    let lines = vec![
+        "ABC1x".to_string(),
+        "ABC1y".to_string(),
+        "ABC1z".to_string(),
+    ];
+
+    let mut partitions = vec![Partition::new("ABC".to_string(), vec![0, 1, 2], 0)];
+
+    split_partition(&mut partitions[0], &lines, 3, 1);
+
+    let children = &partitions[0].children;
+    assert_eq!(children.len(), 3);
+    assert_eq!(children[0].prefix, "ABC1x");
+    assert_eq!(children[1].prefix, "ABC1y");
+    assert_eq!(children[2].prefix, "ABC1z");
 }
