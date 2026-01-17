@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::prefix_of;
+use crate::{prefix_of, LineStore, SearchTerm};
 
 #[derive(Debug, Clone)]
 pub struct Partition {
@@ -44,9 +44,18 @@ impl Partition {
         }
     }
 
-    pub fn insert_line(&mut self, line_idx: usize, lines: &[String], target_size: usize) {
+    pub fn insert_line(
+        &mut self,
+        line_idx: usize,
+        line_store: &LineStore,
+        target_size: usize,
+        term: Option<&SearchTerm>,
+    ) -> bool {
         self.line_indices.push(line_idx);
         self.line_count += 1;
+        let line_matches = term
+            .map(|term| term.matches_line(&line_store.normalized[line_idx]))
+            .unwrap_or(false);
 
         if !self.children.is_empty() {
             let child_prefix_len = self
@@ -54,22 +63,43 @@ impl Partition {
                 .first()
                 .map(|child| child.prefix_len)
                 .unwrap_or(self.prefix_len + 1);
-            let child_prefix = prefix_of(&lines[line_idx], child_prefix_len);
-            if let Some(&child_idx) = self.child_index.get(&child_prefix) {
-                self.children[child_idx].insert_line(line_idx, lines, target_size);
+            let child_prefix = prefix_of(&line_store.lines[line_idx], child_prefix_len);
+            let child_matched = if let Some(&child_idx) = self.child_index.get(&child_prefix) {
+                self.children[child_idx].insert_line(line_idx, line_store, target_size, term)
             } else {
-                let new_child =
-                    Partition::new(child_prefix.clone(), vec![line_idx], self.depth + 1, child_prefix_len);
+                let mut new_child = Partition::new(
+                    child_prefix.clone(),
+                    vec![line_idx],
+                    self.depth + 1,
+                    child_prefix_len,
+                );
+                if line_matches {
+                    new_child.matches_self = true;
+                }
                 self.children.push(new_child);
                 self.child_index
                     .insert(child_prefix, self.children.len() - 1);
+                line_matches
+            };
+            if child_matched {
+                self.matches_descendants = true;
             }
-            return;
+            if line_matches {
+                self.matches_self = true;
+            }
+            return line_matches || child_matched;
         }
 
-        if self.line_count > target_size {
-            split_partition(self, lines, target_size);
+        if line_matches {
+            self.matches_self = true;
         }
+        if self.line_count > target_size {
+            split_partition(self, &line_store.lines, target_size);
+            if let Some(term) = term {
+                crate::mark_search_matches(std::slice::from_mut(self), line_store, term);
+            }
+        }
+        line_matches
     }
 }
 
@@ -103,17 +133,23 @@ pub fn insert_top_level(
     partitions: &mut Vec<Partition>,
     index: &mut PartitionIndex,
     line_idx: usize,
-    line: &str,
+    line_store: &LineStore,
     prefix_len: usize,
+    target_size: usize,
+    term: Option<&SearchTerm>,
 ) {
-    let prefix = prefix_of(line, prefix_len);
+    let prefix = prefix_of(&line_store.lines[line_idx], prefix_len);
     if let Some(&idx) = index.top_index.get(&prefix) {
-        let partition = &mut partitions[idx];
-        partition.line_indices.push(line_idx);
-        partition.line_count += 1;
+        partitions[idx].insert_line(line_idx, line_store, target_size, term);
     } else {
         let new_idx = partitions.len();
-        partitions.push(Partition::new(prefix.clone(), vec![line_idx], 0, prefix_len));
+        let mut partition = Partition::new(prefix.clone(), vec![line_idx], 0, prefix_len);
+        if let Some(term) = term {
+            if term.matches_line(&line_store.normalized[line_idx]) {
+                partition.matches_self = true;
+            }
+        }
+        partitions.push(partition);
         index.top_index.insert(prefix, new_idx);
     }
 }

@@ -50,10 +50,11 @@ fn splits_when_next_prefix_is_same_but_longer_differs() {
 #[test]
 fn insert_routes_into_existing_child() {
     let lines = vec!["AX".to_string(), "AY".to_string(), "AX".to_string()];
+    let store = butterlog::LineStore::new(lines.clone());
     let mut partition = Partition::new("A".to_string(), vec![0, 1], 0, 1);
 
     split_partition(&mut partition, &lines, 1);
-    partition.insert_line(2, &lines, 1);
+    partition.insert_line(2, &store, 1, None);
 
     let ax_child = partition
         .children
