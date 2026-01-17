@@ -10,6 +10,7 @@ pub struct LoadBatch {
     pub is_complete: bool,
 }
 
+#[derive(Debug)]
 pub struct LineLoader {
     reader: io::BufReader<File>,
     is_complete: bool,
