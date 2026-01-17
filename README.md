@@ -16,6 +16,7 @@ Regenerate: `cargo run --example render_screenshot`
 - Shows matching partitions and lines with background highlights
 - Horizontal panning for long lines, automatic vertical scrolling
 - Search mode with live input feedback
+- Progressive loading that loads more lines as you scroll near the end
 
 ## How It Works
 1. Reads the first 5000 lines to build a quick sample.
@@ -24,6 +25,7 @@ Regenerate: `cargo run --example render_screenshot`
 4. Groups lines by prefix length to hit the target, then splits large groups.
 5. Recursively partitions large groups with longer prefixes.
 6. Renders partitions with a trailing "..." to indicate prefix grouping.
+7. Loads more lines in memory as you navigate toward the end of the list.
 
 If the sample is small (less than 2x the screen height), Butterlog skips
 partitioning and shows lines directly.
@@ -85,6 +87,8 @@ Search: timeout
 - Press `/` to enter search mode.
 - A prompt appears at the bottom: `Search: <your input>`.
 - Search is case-insensitive and highlights matching partitions and lines.
+- When the status line shows `Partial load: search incomplete`, search only covers
+  the lines loaded so far. Keep scrolling to load more data.
 
 ## Examples
 
@@ -94,5 +98,6 @@ cargo run -- ./examples/openstack_normal1.log
 ```
 
 ## Notes And Limitations
-- Search and line viewing operate on the initial 5000-line sample.
+- Loading is streaming and in-memory; large files become fully searchable once
+  all lines are loaded.
 - Partition counts are heuristic and based on the estimate, not exact totals.
