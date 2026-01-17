@@ -2,7 +2,7 @@ use ratatui::prelude::*;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 
-use crate::{InputMode, RowKind, SearchState, VisibleRow};
+use crate::{InputMode, LoadStatus, RowKind, SearchState, VisibleRow};
 
 fn row_display_text(row: &VisibleRow) -> String {
     let indent = "  ".repeat(row.depth);
@@ -32,6 +32,7 @@ pub fn render_rows(
     vertical_offset: u16,
     horizontal_offset: u16,
     search: &SearchState,
+    load_status: &LoadStatus,
 ) {
     let mut lines = Vec::new();
 
@@ -56,13 +57,18 @@ pub fn render_rows(
     let paragraph = Paragraph::new(lines).scroll((vertical_offset, horizontal_offset));
     frame.render_widget(paragraph, layout[0]);
 
-    let (status_text, status_style) = if search.mode == InputMode::Search {
-        (
-            format!("Search: {}", search.buffer),
-            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
-        )
+    let mut parts = Vec::new();
+    if search.mode == InputMode::Search {
+        parts.push(format!("Search: {}", search.buffer));
+    }
+    if !load_status.is_complete {
+        parts.push("Partial load: search incomplete".to_string());
+    }
+    let status_text = parts.join(" | ");
+    let status_style = if status_text.is_empty() {
+        Style::default()
     } else {
-        (String::new(), Style::default())
+        Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
     };
     let status_line = Line::from(Span::styled(status_text, status_style));
     let status = Paragraph::new(status_line);

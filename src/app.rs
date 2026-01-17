@@ -1,4 +1,4 @@
-use crate::{flatten_partitions, LineStore, Partition, UiState, VisibleRow};
+use crate::{flatten_partitions, LineStore, LoadStatus, Partition, UiState, VisibleRow};
 
 #[derive(Debug)]
 pub struct AppModel {
@@ -6,10 +6,11 @@ pub struct AppModel {
     pub partitions: Vec<Partition>,
     pub rows: Vec<VisibleRow>,
     pub ui: UiState,
+    pub load_status: LoadStatus,
 }
 
 impl AppModel {
-    pub fn new(line_store: LineStore, partitions: Vec<Partition>) -> Self {
+    pub fn new(line_store: LineStore, partitions: Vec<Partition>, load_status: LoadStatus) -> Self {
         let rows = flatten_partitions(&partitions, &line_store, None, 0);
         let ui = UiState::new();
         Self {
@@ -17,6 +18,7 @@ impl AppModel {
             partitions,
             rows,
             ui,
+            load_status,
         }
     }
 }

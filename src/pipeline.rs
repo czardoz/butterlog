@@ -6,12 +6,13 @@ use crate::{
 };
 
 pub const DEFAULT_SCREEN_HEIGHT: u16 = 24;
+pub const SAMPLE_LINE_LIMIT: usize = 5000;
 
 pub fn build_partitions_from_file(
     path: &Path,
     screen_height: u16,
 ) -> AppResult<(LineStore, Vec<Partition>)> {
-    let sample = read_first_n_lines(path, 5000)?;
+    let sample = read_first_n_lines(path, SAMPLE_LINE_LIMIT)?;
     let avg_len = average_line_len(&sample);
     let file_size = file_size_bytes(path)?;
     let estimated_lines = estimate_total_lines(file_size, avg_len);

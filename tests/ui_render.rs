@@ -1,4 +1,4 @@
-use butterlog::{render_rows, RowKind, RowPath, SearchState, VisibleRow};
+use butterlog::{render_rows, LoadStatus, RowKind, RowPath, SearchState, VisibleRow};
 use ratatui::backend::TestBackend;
 use ratatui::style::Modifier;
 use ratatui::Terminal;
@@ -44,7 +44,8 @@ fn renders_arrows_and_prefixes_with_highlight() {
     terminal
         .draw(|frame| {
             let search = SearchState::new();
-            render_rows(&rows, frame, 0, 0, &search);
+            let load_status = LoadStatus::complete();
+            render_rows(&rows, frame, 0, 0, &search, &load_status);
         })
         .expect("draw");
 
@@ -86,7 +87,8 @@ fn renders_with_horizontal_scroll_offset() {
     terminal
         .draw(|frame| {
             let search = SearchState::new();
-            render_rows(&rows, frame, 0, 2, &search);
+            let load_status = LoadStatus::complete();
+            render_rows(&rows, frame, 0, 2, &search, &load_status);
         })
         .expect("draw");
 
@@ -121,7 +123,8 @@ fn renders_search_prompt_and_buffer() {
 
     terminal
         .draw(|frame| {
-            render_rows(&rows, frame, 0, 0, &search);
+            let load_status = LoadStatus::complete();
+            render_rows(&rows, frame, 0, 0, &search, &load_status);
         })
         .expect("draw");
 
@@ -166,7 +169,8 @@ fn renders_with_vertical_scroll_offset() {
 
     terminal
         .draw(|frame| {
-            render_rows(&rows, frame, 1, 0, &search);
+            let load_status = LoadStatus::complete();
+            render_rows(&rows, frame, 1, 0, &search, &load_status);
         })
         .expect("draw");
 
@@ -174,4 +178,37 @@ fn renders_with_vertical_scroll_offset() {
     let line0 = row_text(buffer, 0, 12);
 
     assert!(line0.contains("BBB..."));
+}
+
+#[test]
+fn renders_partial_load_indicator() {
+    let rows = vec![VisibleRow {
+        kind: RowKind::Partition,
+        path: RowPath(vec![0]),
+        depth: 0,
+        text: "ERR".to_string(),
+        line_count: 2,
+        expanded: false,
+        matches_self: false,
+        matches_descendants: false,
+        line_index: None,
+        is_selected: false,
+    }];
+
+    let backend = TestBackend::new(40, 5);
+    let mut terminal = Terminal::new(backend).expect("terminal");
+    let search = SearchState::new();
+    let load_status = LoadStatus::partial();
+
+    terminal
+        .draw(|frame| {
+            render_rows(&rows, frame, 0, 0, &search, &load_status);
+        })
+        .expect("draw");
+
+    let buffer = terminal.backend().buffer();
+    let line4 = row_text(buffer, 4, 40);
+
+    assert!(line4.contains("Partial load"));
+    assert!(line4.contains("search incomplete"));
 }

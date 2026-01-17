@@ -1,7 +1,9 @@
 use std::fs;
 use std::path::Path;
 
-use butterlog::{apply_search, InputMode, LineStore, Partition, SearchState, SearchTerm, render_rows};
+use butterlog::{
+    apply_search, InputMode, LineStore, LoadStatus, Partition, SearchState, SearchTerm, render_rows,
+};
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::style::{Color, Modifier};
@@ -35,7 +37,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     terminal.draw(|frame| {
-        render_rows(&rows, frame, 0, 0, &search);
+        let load_status = LoadStatus::partial();
+        render_rows(&rows, frame, 0, 0, &search, &load_status);
     })?;
 
     let buffer = terminal.backend().buffer();
