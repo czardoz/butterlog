@@ -4,6 +4,12 @@ Butterlog is a fast CLI/TUI for scanning huge log files by grouping similar
 prefixes into expandable partitions. It works with any log format and is built
 for speed and navigation.
 
+## Screenshot
+
+![Butterlog screenshot](assets/screenshot.svg)
+
+Regenerate: `cargo run --example render_screenshot`
+
 ## Highlights
 - Works on plain text logs with no required schema
 - Partitions large files by prefix so you can drill down quickly
