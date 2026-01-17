@@ -10,7 +10,8 @@ use ratatui::Terminal;
 
 use butterlog::{
     apply_search, build_partitions_from_file, build_partitions_from_file_default, handle_key_normal,
-    max_row_width, AppError, AppModel, InputMode, LoadStatus, SearchTerm,
+    insert_top_level, max_row_width, should_load_more, AppError, AppModel, InputMode, LoadStatus,
+    SearchTerm,
 };
 
 #[derive(Parser, Debug)]
@@ -121,6 +122,44 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
                     handle_key_normal(key.code, &model.rows, &mut model.partitions, &mut model.ui);
                 }
             }
+        }
+
+        if !model.load_state.is_complete
+            && should_load_more(
+                model.ui.selected,
+                model.rows.len(),
+                model.load_state.config.near_end_threshold,
+            )
+        {
+            let batch = model.load_state.load_more()?;
+            if !batch.lines.is_empty() {
+                let new_range = model.line_store.append_lines(batch.lines);
+                if !model.partitions.is_empty() {
+                    for line_idx in new_range {
+                        insert_top_level(
+                            &mut model.partitions,
+                            &mut model.partition_index,
+                            line_idx,
+                            &model.line_store,
+                            model.plan.top_prefix_len,
+                            model.plan.target_size,
+                            model.ui.search.term.as_ref(),
+                        );
+                    }
+                }
+            }
+            model.load_status = if model.load_state.is_complete {
+                LoadStatus::complete()
+            } else {
+                LoadStatus::partial()
+            };
+            model.rows = refresh_rows(
+                model.ui.search.term.as_ref(),
+                &mut model.partitions,
+                &model.line_store,
+                model.ui.selected,
+            );
+            model.ui.ensure_visible(model.rows.len(), list_height);
         }
 
         model.ui.clamp_horizontal(max_scroll);

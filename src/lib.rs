@@ -31,7 +31,7 @@ pub use line_sample::{average_line_len, read_first_n_lines, LineSample};
 pub use line_store::LineStore;
 pub use loader::{LineLoader, LoadBatch};
 pub use load_status::LoadStatus;
-pub use load_state::{LoadConfig, LoadState};
+pub use load_state::{should_load_more, LoadConfig, LoadState};
 pub use partition::{
     build_top_level_partitions, insert_top_level, split_partition, Partition, PartitionIndex,
 };

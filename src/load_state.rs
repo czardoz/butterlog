@@ -37,3 +37,11 @@ impl LoadState {
         Ok(batch)
     }
 }
+
+pub fn should_load_more(selected: usize, total_rows: usize, threshold: usize) -> bool {
+    if total_rows == 0 {
+        return false;
+    }
+    let end_index = total_rows.saturating_sub(1);
+    selected.saturating_add(threshold) >= end_index
+}
