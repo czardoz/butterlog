@@ -10,7 +10,7 @@ use ratatui::Terminal;
 
 use butterlog::{
     apply_search, build_partitions_from_file, build_partitions_from_file_default, handle_key_normal,
-    max_row_width, AppError, AppModel, InputMode, LoadStatus, SAMPLE_LINE_LIMIT, SearchTerm,
+    max_row_width, AppError, AppModel, InputMode, LoadStatus, SearchTerm,
 };
 
 #[derive(Parser, Debug)]
@@ -59,14 +59,13 @@ fn validate_path(path: &PathBuf) -> Result<(), AppError> {
 
 fn run_ui(path: &PathBuf) -> Result<(), AppError> {
     let (_, screen_height) = crossterm::terminal::size()?;
-    let (line_store, partitions) = build_partitions_from_file(path, screen_height)?;
-    let is_complete = line_store.lines.len() < SAMPLE_LINE_LIMIT;
-    let load_status = if is_complete {
+    let output = build_partitions_from_file(path, screen_height)?;
+    let load_status = if output.load_state.is_complete {
         LoadStatus::complete()
     } else {
         LoadStatus::partial()
     };
-    let mut model = AppModel::new(line_store, partitions, load_status);
+    let mut model = AppModel::new(output, load_status);
 
     enable_raw_mode()?;
     let mut stdout = std::io::stdout();
@@ -136,8 +135,8 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
 }
 
 fn run_no_ui(path: &PathBuf) -> Result<(), AppError> {
-    let (_store, partitions) = build_partitions_from_file_default(path)?;
-    println!("partitions: {}", partitions.len());
+    let output = build_partitions_from_file_default(path)?;
+    println!("partitions: {}", output.partitions.len());
     Ok(())
 }
 

@@ -2,7 +2,8 @@ use std::path::Path;
 
 use crate::{
     average_line_len, build_top_level_partitions, estimate_total_lines, file_size_bytes,
-    group_by_prefix, read_first_n_lines, split_partition, AppResult, Group, LineStore, Partition,
+    group_by_prefix, split_partition, AppResult, Group, LineLoader, LineSample, LineStore,
+    LoadConfig, LoadState, Partition,
 };
 
 pub const DEFAULT_SCREEN_HEIGHT: u16 = 24;
@@ -26,43 +27,69 @@ impl PartitionPlan {
     }
 }
 
+#[derive(Debug)]
+pub struct BuildOutput {
+    pub line_store: LineStore,
+    pub partitions: Vec<Partition>,
+    pub load_state: LoadState,
+    pub plan: PartitionPlan,
+}
+
 pub fn build_partitions_from_file(
     path: &Path,
     screen_height: u16,
-) -> AppResult<(LineStore, Vec<Partition>)> {
-    let sample = read_first_n_lines(path, SAMPLE_LINE_LIMIT)?;
+) -> AppResult<BuildOutput> {
+    let loader = LineLoader::open(path)?;
+    let mut load_state = LoadState::new(loader, LoadConfig::default());
+    let batch = load_state.load_more()?;
+    let line_store = LineStore::new(batch.lines);
+
+    let sample = LineSample {
+        lines: line_store.lines.clone(),
+    };
     let avg_len = average_line_len(&sample);
     let file_size = file_size_bytes(path)?;
     let estimated_lines = estimate_total_lines(file_size, avg_len);
-    let sample_count = sample.lines.len();
+    let sample_count = line_store.lines.len();
     let raw_target = (screen_height as usize).saturating_mul(2).max(1);
-    let lines = sample.lines;
-    let line_store = LineStore::new(lines);
+    let plan = PartitionPlan::from_sample(&line_store.lines, estimated_lines, screen_height);
 
     if sample_count < raw_target {
-        return Ok((line_store, Vec::new()));
+        return Ok(BuildOutput {
+            line_store,
+            partitions: Vec::new(),
+            load_state,
+            plan,
+        });
     }
 
     let target_partitions = target_partition_count(sample_count, screen_height);
-    let target_size = target_partition_size_for_screen(estimated_lines, target_partitions);
-    let prefix_len = choose_prefix_len(&line_store.lines, target_partitions);
-
-    let mut groups = group_by_prefix(&line_store.lines, prefix_len);
+    let mut groups = group_by_prefix(&line_store.lines, plan.top_prefix_len);
     if groups.len() < target_partitions {
         groups = split_groups_to_target(groups, target_partitions);
     }
     let mut partitions = build_top_level_partitions(groups, 0);
 
     for partition in &mut partitions {
-        split_partition(partition, &line_store.lines, prefix_len, target_size);
+        split_partition(
+            partition,
+            &line_store.lines,
+            plan.top_prefix_len,
+            plan.target_size,
+        );
     }
 
-    Ok((line_store, partitions))
+    Ok(BuildOutput {
+        line_store,
+        partitions,
+        load_state,
+        plan,
+    })
 }
 
 pub fn build_partitions_from_file_default(
     path: &Path,
-) -> AppResult<(LineStore, Vec<Partition>)> {
+) -> AppResult<BuildOutput> {
     build_partitions_from_file(path, DEFAULT_SCREEN_HEIGHT)
 }
 
