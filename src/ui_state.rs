@@ -56,6 +56,7 @@ impl SearchState {
 #[derive(Debug)]
 pub struct UiState {
     pub selected: usize,
+    pub vertical_offset: u16,
     pub horizontal_offset: u16,
     pub search: SearchState,
     pub should_quit: bool,
@@ -65,6 +66,7 @@ impl UiState {
     pub fn new() -> Self {
         Self {
             selected: 0,
+            vertical_offset: 0,
             horizontal_offset: 0,
             search: SearchState::new(),
             should_quit: false,
@@ -97,6 +99,41 @@ impl UiState {
         if self.selected + 1 < max {
             self.selected += 1;
         }
+    }
+
+    pub fn ensure_visible(&mut self, row_count: usize, viewport_height: u16) -> bool {
+        let prev_selected = self.selected;
+        if row_count == 0 {
+            self.selected = 0;
+            self.vertical_offset = 0;
+            return self.selected != prev_selected;
+        }
+
+        let max_index = row_count - 1;
+        if self.selected > max_index {
+            self.selected = max_index;
+        }
+
+        let height = viewport_height as usize;
+        if height == 0 {
+            self.vertical_offset = 0;
+            return self.selected != prev_selected;
+        }
+
+        let mut offset = self.vertical_offset as usize;
+        if self.selected < offset {
+            offset = self.selected;
+        } else if self.selected >= offset + height {
+            offset = self.selected + 1 - height;
+        }
+
+        let max_offset = row_count.saturating_sub(height).min(u16::MAX as usize);
+        if offset > max_offset {
+            offset = max_offset;
+        }
+
+        self.vertical_offset = offset as u16;
+        self.selected != prev_selected
     }
 
     pub fn scroll_left(&mut self) {

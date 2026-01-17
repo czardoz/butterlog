@@ -71,14 +71,26 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
     let mut terminal = Terminal::new(backend)?;
 
     loop {
-        model.rows = refresh_rows(
+        let mut rows = refresh_rows(
             model.ui.search.term.as_ref(),
             &mut model.partitions,
             &model.line_store,
             model.ui.selected,
         );
 
-        let term_width = terminal.size()?.width as usize;
+        let term_size = terminal.size()?;
+        let list_height = term_size.height.saturating_sub(1);
+        if model.ui.ensure_visible(rows.len(), list_height) {
+            rows = refresh_rows(
+                model.ui.search.term.as_ref(),
+                &mut model.partitions,
+                &model.line_store,
+                model.ui.selected,
+            );
+        }
+        model.rows = rows;
+
+        let term_width = term_size.width as usize;
         let max_width = max_row_width(&model.rows);
         let max_scroll = max_width
             .saturating_sub(term_width)
@@ -86,7 +98,13 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
         model.ui.clamp_horizontal(max_scroll);
 
         terminal.draw(|frame| {
-            butterlog::render_rows(&model.rows, frame, model.ui.horizontal_offset, &model.ui.search);
+            butterlog::render_rows(
+                &model.rows,
+                frame,
+                model.ui.vertical_offset,
+                model.ui.horizontal_offset,
+                &model.ui.search,
+            );
         })?;
 
         if event::poll(Duration::from_millis(200))? {
@@ -100,6 +118,7 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
         }
 
         model.ui.clamp_horizontal(max_scroll);
+        model.ui.ensure_visible(model.rows.len(), list_height);
 
         if model.ui.should_quit {
             break;

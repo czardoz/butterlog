@@ -29,6 +29,7 @@ pub fn max_row_width(rows: &[VisibleRow]) -> usize {
 pub fn render_rows(
     rows: &[VisibleRow],
     frame: &mut Frame<'_>,
+    vertical_offset: u16,
     horizontal_offset: u16,
     search: &SearchState,
 ) {
@@ -52,7 +53,7 @@ pub fn render_rows(
         .constraints([Constraint::Min(1), Constraint::Length(1)])
         .split(frame.size());
 
-    let paragraph = Paragraph::new(lines).scroll((0, horizontal_offset));
+    let paragraph = Paragraph::new(lines).scroll((vertical_offset, horizontal_offset));
     frame.render_widget(paragraph, layout[0]);
 
     let (status_text, status_style) = if search.mode == InputMode::Search {

@@ -48,8 +48,9 @@ pub fn flatten_partitions(
                 is_selected: false,
             });
         }
-        if let Some(row) = rows.get_mut(selected) {
-            row.is_selected = true;
+        if !rows.is_empty() {
+            let idx = selected.min(rows.len() - 1);
+            rows[idx].is_selected = true;
         }
         return rows;
     }
@@ -57,8 +58,9 @@ pub fn flatten_partitions(
         let path = RowPath(vec![idx]);
         flatten_partition(partition, &path, &mut rows, line_store, term);
     }
-    if let Some(row) = rows.get_mut(selected) {
-        row.is_selected = true;
+    if !rows.is_empty() {
+        let idx = selected.min(rows.len() - 1);
+        rows[idx].is_selected = true;
     }
     rows
 }

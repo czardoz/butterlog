@@ -44,7 +44,7 @@ fn renders_arrows_and_prefixes_with_highlight() {
     terminal
         .draw(|frame| {
             let search = SearchState::new();
-            render_rows(&rows, frame, 0, &search);
+            render_rows(&rows, frame, 0, 0, &search);
         })
         .expect("draw");
 
@@ -86,7 +86,7 @@ fn renders_with_horizontal_scroll_offset() {
     terminal
         .draw(|frame| {
             let search = SearchState::new();
-            render_rows(&rows, frame, 2, &search);
+            render_rows(&rows, frame, 0, 2, &search);
         })
         .expect("draw");
 
@@ -121,7 +121,7 @@ fn renders_search_prompt_and_buffer() {
 
     terminal
         .draw(|frame| {
-            render_rows(&rows, frame, 0, &search);
+            render_rows(&rows, frame, 0, 0, &search);
         })
         .expect("draw");
 
@@ -129,4 +129,49 @@ fn renders_search_prompt_and_buffer() {
     let line4 = row_text(buffer, 4, 20);
 
     assert!(line4.contains("Search: err"));
+}
+
+#[test]
+fn renders_with_vertical_scroll_offset() {
+    let rows = vec![
+        VisibleRow {
+            kind: RowKind::Partition,
+            path: RowPath(vec![0]),
+            depth: 0,
+            text: "AAA".to_string(),
+            line_count: 1,
+            expanded: false,
+            matches_self: false,
+            matches_descendants: false,
+            line_index: None,
+            is_selected: false,
+        },
+        VisibleRow {
+            kind: RowKind::Partition,
+            path: RowPath(vec![1]),
+            depth: 0,
+            text: "BBB".to_string(),
+            line_count: 1,
+            expanded: false,
+            matches_self: false,
+            matches_descendants: false,
+            line_index: None,
+            is_selected: false,
+        },
+    ];
+
+    let backend = TestBackend::new(12, 4);
+    let mut terminal = Terminal::new(backend).expect("terminal");
+    let search = SearchState::new();
+
+    terminal
+        .draw(|frame| {
+            render_rows(&rows, frame, 1, 0, &search);
+        })
+        .expect("draw");
+
+    let buffer = terminal.backend().buffer();
+    let line0 = row_text(buffer, 0, 12);
+
+    assert!(line0.contains("BBB..."));
 }

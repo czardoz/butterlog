@@ -22,3 +22,24 @@ fn selection_handles_empty_rows() {
     state.move_down(0);
     assert_eq!(state.selected, 0);
 }
+
+#[test]
+fn ensure_visible_scrolls_to_selected_row() {
+    let mut state = UiState::new();
+    state.selected = 5;
+
+    state.ensure_visible(10, 3);
+
+    assert_eq!(state.vertical_offset, 3);
+}
+
+#[test]
+fn ensure_visible_clamps_selection_when_rows_shrink() {
+    let mut state = UiState::new();
+    state.selected = 4;
+
+    state.ensure_visible(2, 3);
+
+    assert_eq!(state.selected, 1);
+    assert_eq!(state.vertical_offset, 0);
+}
