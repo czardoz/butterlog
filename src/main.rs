@@ -9,9 +9,8 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 
 use butterlog::{
-    apply_search, build_partitions_from_file, build_partitions_from_file_default, handle_key_normal,
-    insert_top_level, max_row_width, should_load_more, AppError, AppModel, InputMode, LoadStatus,
-    SearchTerm,
+    build_partitions_from_file, build_partitions_from_file_default, handle_key_normal,
+    insert_top_level, should_load_more, AppError, AppModel, InputMode, LoadStatus,
 };
 
 #[derive(Parser, Debug)]
@@ -77,27 +76,17 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
     let mut terminal = Terminal::new(backend)?;
 
     loop {
-        let mut rows = refresh_rows(
-            model.ui.search.term.as_ref(),
-            &mut model.partitions,
-            &model.line_store,
-            model.ui.selected,
-        );
+        model.refresh_rows_if_dirty();
 
         let term_size = terminal.size()?;
         let list_height = term_size.height.saturating_sub(1);
-        if model.ui.ensure_visible(rows.len(), list_height) {
-            rows = refresh_rows(
-                model.ui.search.term.as_ref(),
-                &mut model.partitions,
-                &model.line_store,
-                model.ui.selected,
-            );
+        if model.ui.ensure_visible(model.rows.len(), list_height) {
+            model.mark_rows_dirty();
+            model.refresh_rows_if_dirty();
         }
-        model.rows = rows;
 
         let term_width = term_size.width as usize;
-        let max_width = max_row_width(&model.rows);
+        let max_width = model.cached_max_width;
         let max_scroll = max_width
             .saturating_sub(term_width)
             .min(u16::MAX as usize) as u16;
@@ -117,9 +106,20 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
         if event::poll(Duration::from_millis(200))? {
             if let Event::Key(key) = event::read()? {
                 if model.ui.search.mode == InputMode::Search {
+                    let before = model.ui.search.term.as_ref().map(|term| term.raw.clone());
                     model.ui.handle_search_key(key.code);
+                    let after = model.ui.search.term.as_ref().map(|term| term.raw.clone());
+                    if before != after {
+                        model.mark_rows_dirty();
+                    }
                 } else {
                     handle_key_normal(key.code, &model.rows, &mut model.partitions, &mut model.ui);
+                    if !matches!(
+                        key.code,
+                        crossterm::event::KeyCode::Left | crossterm::event::KeyCode::Right
+                    ) {
+                        model.mark_rows_dirty();
+                    }
                 }
             }
         }
@@ -153,17 +153,8 @@ fn run_ui(path: &PathBuf) -> Result<(), AppError> {
             } else {
                 LoadStatus::partial()
             };
-            model.rows = refresh_rows(
-                model.ui.search.term.as_ref(),
-                &mut model.partitions,
-                &model.line_store,
-                model.ui.selected,
-            );
-            model.ui.ensure_visible(model.rows.len(), list_height);
+            model.mark_rows_dirty();
         }
-
-        model.ui.clamp_horizontal(max_scroll);
-        model.ui.ensure_visible(model.rows.len(), list_height);
 
         if model.ui.should_quit {
             break;
@@ -177,18 +168,6 @@ fn run_no_ui(path: &PathBuf) -> Result<(), AppError> {
     let output = build_partitions_from_file_default(path)?;
     println!("partitions: {}", output.partitions.len());
     Ok(())
-}
-
-fn refresh_rows(
-    term: Option<&SearchTerm>,
-    partitions: &mut [butterlog::Partition],
-    line_store: &butterlog::LineStore,
-    selected: usize,
-) -> Vec<butterlog::VisibleRow> {
-    match term {
-        Some(term) => apply_search(Some(term), partitions, line_store, selected),
-        None => apply_search(None, partitions, line_store, selected),
-    }
 }
 
 struct TerminalGuard;
