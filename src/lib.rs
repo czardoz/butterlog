@@ -32,7 +32,9 @@ pub use line_store::LineStore;
 pub use loader::{LineLoader, LoadBatch};
 pub use load_status::LoadStatus;
 pub use load_state::{LoadConfig, LoadState};
-pub use partition::{build_top_level_partitions, split_partition, Partition};
+pub use partition::{
+    build_top_level_partitions, insert_top_level, split_partition, Partition, PartitionIndex,
+};
 pub use prefix::prefix_of;
 pub use search::{mark_search_matches, SearchTerm};
 pub use ui::{max_row_width, render_rows};

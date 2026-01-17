@@ -45,6 +45,21 @@ impl Partition {
     }
 }
 
+#[derive(Debug, Default)]
+pub struct PartitionIndex {
+    pub top_index: HashMap<String, usize>,
+}
+
+impl PartitionIndex {
+    pub fn from_partitions(partitions: &[Partition]) -> Self {
+        let mut top_index = HashMap::new();
+        for (idx, partition) in partitions.iter().enumerate() {
+            top_index.insert(partition.prefix.clone(), idx);
+        }
+        Self { top_index }
+    }
+}
+
 pub fn build_top_level_partitions(
     groups: Vec<crate::Group>,
     depth: usize,
@@ -54,6 +69,25 @@ pub fn build_top_level_partitions(
         .into_iter()
         .map(|group| Partition::new(group.prefix, group.line_indices, depth, prefix_len))
         .collect()
+}
+
+pub fn insert_top_level(
+    partitions: &mut Vec<Partition>,
+    index: &mut PartitionIndex,
+    line_idx: usize,
+    line: &str,
+    prefix_len: usize,
+) {
+    let prefix = prefix_of(line, prefix_len);
+    if let Some(&idx) = index.top_index.get(&prefix) {
+        let partition = &mut partitions[idx];
+        partition.line_indices.push(line_idx);
+        partition.line_count += 1;
+    } else {
+        let new_idx = partitions.len();
+        partitions.push(Partition::new(prefix.clone(), vec![line_idx], 0, prefix_len));
+        index.top_index.insert(prefix, new_idx);
+    }
 }
 
 pub fn split_partition(
