@@ -62,6 +62,19 @@ butterlog --no-ui <path/to/log>
 | Esc | Cancel search input |
 | q | Quit |
 
+## Demo
+
+```
+> ERR...
+  > WARN...
+  v INFO...
+    - 2024-05-01 10:10:01 INFO Boot sequence started
+    - 2024-05-01 10:10:02 INFO Loaded module: network
+    - 2024-05-01 10:10:03 INFO Listening on 0.0.0.0:8080
+
+Search: timeout
+```
+
 ## Search
 - Press `/` to enter search mode.
 - A prompt appears at the bottom: `Search: <your input>`.
