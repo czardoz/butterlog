@@ -13,7 +13,7 @@ fn splits_large_partitions_with_longer_prefixes() {
     let mut partitions = build_top_level_partitions(groups, 0, 3);
 
     for partition in &mut partitions {
-        split_partition(partition, &lines, 3, 2);
+        split_partition(partition, &lines, 2);
     }
 
     let err_partition = &partitions[0];
@@ -38,11 +38,28 @@ fn splits_when_next_prefix_is_same_but_longer_differs() {
 
     let mut partitions = vec![Partition::new("ABC".to_string(), vec![0, 1, 2], 0, 3)];
 
-    split_partition(&mut partitions[0], &lines, 3, 1);
+    split_partition(&mut partitions[0], &lines, 1);
 
     let children = &partitions[0].children;
     assert_eq!(children.len(), 3);
     assert_eq!(children[0].prefix, "ABC1x");
     assert_eq!(children[1].prefix, "ABC1y");
     assert_eq!(children[2].prefix, "ABC1z");
+}
+
+#[test]
+fn insert_routes_into_existing_child() {
+    let lines = vec!["AX".to_string(), "AY".to_string(), "AX".to_string()];
+    let mut partition = Partition::new("A".to_string(), vec![0, 1], 0, 1);
+
+    split_partition(&mut partition, &lines, 1);
+    partition.insert_line(2, &lines, 1);
+
+    let ax_child = partition
+        .children
+        .iter()
+        .find(|child| child.prefix == "AX")
+        .expect("AX child");
+    assert_eq!(ax_child.line_indices, vec![0, 2]);
+    assert_eq!(ax_child.line_count, 2);
 }

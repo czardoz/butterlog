@@ -43,6 +43,34 @@ impl Partition {
             self.child_index.insert(child.prefix.clone(), idx);
         }
     }
+
+    pub fn insert_line(&mut self, line_idx: usize, lines: &[String], target_size: usize) {
+        self.line_indices.push(line_idx);
+        self.line_count += 1;
+
+        if !self.children.is_empty() {
+            let child_prefix_len = self
+                .children
+                .first()
+                .map(|child| child.prefix_len)
+                .unwrap_or(self.prefix_len + 1);
+            let child_prefix = prefix_of(&lines[line_idx], child_prefix_len);
+            if let Some(&child_idx) = self.child_index.get(&child_prefix) {
+                self.children[child_idx].insert_line(line_idx, lines, target_size);
+            } else {
+                let new_child =
+                    Partition::new(child_prefix.clone(), vec![line_idx], self.depth + 1, child_prefix_len);
+                self.children.push(new_child);
+                self.child_index
+                    .insert(child_prefix, self.children.len() - 1);
+            }
+            return;
+        }
+
+        if self.line_count > target_size {
+            split_partition(self, lines, target_size);
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -90,12 +118,7 @@ pub fn insert_top_level(
     }
 }
 
-pub fn split_partition(
-    partition: &mut Partition,
-    lines: &[String],
-    prefix_len: usize,
-    target_size: usize,
-) {
+pub fn split_partition(partition: &mut Partition, lines: &[String], target_size: usize) {
     if partition.line_count() <= target_size {
         return;
     }
@@ -107,7 +130,7 @@ pub fn split_partition(
         .max()
         .unwrap_or(0);
 
-    let mut candidate_len = prefix_len + 1;
+    let mut candidate_len = partition.prefix_len + 1;
     let mut groups = Vec::new();
     while candidate_len <= max_len {
         groups = group_indices_by_prefix(&partition.line_indices, lines, candidate_len);
@@ -130,7 +153,7 @@ pub fn split_partition(
     partition.rebuild_child_index();
 
     for child in &mut partition.children {
-        split_partition(child, lines, candidate_len, target_size);
+        split_partition(child, lines, target_size);
     }
 }
 

@@ -71,12 +71,7 @@ pub fn build_partitions_from_file(
     let mut partitions = build_top_level_partitions(groups, 0, plan.top_prefix_len);
 
     for partition in &mut partitions {
-        split_partition(
-            partition,
-            &line_store.lines,
-            plan.top_prefix_len,
-            plan.target_size,
-        );
+        split_partition(partition, &line_store.lines, plan.target_size);
     }
 
     Ok(BuildOutput {
