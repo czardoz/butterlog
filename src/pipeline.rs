@@ -8,6 +8,24 @@ use crate::{
 pub const DEFAULT_SCREEN_HEIGHT: u16 = 24;
 pub const SAMPLE_LINE_LIMIT: usize = 5000;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PartitionPlan {
+    pub top_prefix_len: usize,
+    pub target_size: usize,
+}
+
+impl PartitionPlan {
+    pub fn from_sample(lines: &[String], estimated_lines: u64, screen_height: u16) -> Self {
+        let target_partitions = target_partition_count(lines.len(), screen_height);
+        let top_prefix_len = choose_prefix_len(lines, target_partitions);
+        let target_size = target_partition_size_for_screen(estimated_lines, target_partitions);
+        Self {
+            top_prefix_len,
+            target_size,
+        }
+    }
+}
+
 pub fn build_partitions_from_file(
     path: &Path,
     screen_height: u16,
