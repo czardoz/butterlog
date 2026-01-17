@@ -59,7 +59,7 @@ fn sample_lines() -> Vec<String> {
 }
 
 fn sample_partitions() -> Vec<Partition> {
-    let mut info = Partition::new("INFO".to_string(), vec![0, 2, 4], 0);
+    let mut info = Partition::new("INFO".to_string(), vec![0, 2, 4], 0, 4);
     info.expanded = true;
     info.children = vec![
         leaf_partition("INFO Boot", vec![0], 1),
@@ -67,21 +67,22 @@ fn sample_partitions() -> Vec<Partition> {
         leaf_partition("INFO Listening", vec![4], 1),
     ];
 
-    let mut warn = Partition::new("WARN".to_string(), vec![1, 5], 0);
+    let mut warn = Partition::new("WARN".to_string(), vec![1, 5], 0, 4);
     warn.expanded = true;
     warn.children = vec![
         leaf_partition("WARN Request", vec![1], 1),
         leaf_partition("WARN Retry", vec![5], 1),
     ];
 
-    let mut error = Partition::new("ERROR".to_string(), vec![3], 0);
+    let mut error = Partition::new("ERROR".to_string(), vec![3], 0, 5);
     error.expanded = false;
 
     vec![info, warn, error]
 }
 
 fn leaf_partition(prefix: &str, line_indices: Vec<usize>, depth: usize) -> Partition {
-    let mut partition = Partition::new(prefix.to_string(), line_indices, depth);
+    let prefix_len = prefix.chars().count();
+    let mut partition = Partition::new(prefix.to_string(), line_indices, depth, prefix_len);
     partition.expanded = true;
     partition
 }

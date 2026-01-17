@@ -3,8 +3,8 @@ use butterlog::{apply_search, LineStore, Partition, SearchTerm};
 #[test]
 fn applies_search_and_updates_rows() {
     let mut partitions = vec![
-        Partition::new("ERR".to_string(), vec![0], 0),
-        Partition::new("OK".to_string(), vec![1], 0),
+        Partition::new("ERR".to_string(), vec![0], 0, 3),
+        Partition::new("OK".to_string(), vec![1], 0, 2),
     ];
 
     let store = LineStore::new(vec!["error here".to_string(), "all good".to_string()]);
@@ -19,7 +19,7 @@ fn applies_search_and_updates_rows() {
 
 #[test]
 fn clears_search_when_term_is_none() {
-    let mut partitions = vec![Partition::new("ERR".to_string(), vec![0], 0)];
+    let mut partitions = vec![Partition::new("ERR".to_string(), vec![0], 0, 3)];
     partitions[0].matches_self = true;
     partitions[0].matches_descendants = true;
 

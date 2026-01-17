@@ -68,7 +68,7 @@ pub fn build_partitions_from_file(
     if groups.len() < target_partitions {
         groups = split_groups_to_target(groups, target_partitions);
     }
-    let mut partitions = build_top_level_partitions(groups, 0);
+    let mut partitions = build_top_level_partitions(groups, 0, plan.top_prefix_len);
 
     for partition in &mut partitions {
         split_partition(

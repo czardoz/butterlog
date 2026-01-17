@@ -2,8 +2,8 @@ use butterlog::{mark_search_matches, LineStore, Partition, SearchTerm};
 
 #[test]
 fn marks_matching_partitions_and_bubbles_to_parents() {
-    let mut parent = Partition::new("P".to_string(), vec![], 0);
-    let child = Partition::new("C".to_string(), vec![0], 1);
+    let mut parent = Partition::new("P".to_string(), vec![], 0, 1);
+    let child = Partition::new("C".to_string(), vec![0], 1, 1);
     parent.children.push(child);
 
     let mut partitions = vec![parent];
@@ -19,7 +19,7 @@ fn marks_matching_partitions_and_bubbles_to_parents() {
 
 #[test]
 fn clears_flags_when_no_match() {
-    let mut partition = Partition::new("X".to_string(), vec![0], 0);
+    let mut partition = Partition::new("X".to_string(), vec![0], 0, 1);
     partition.matches_self = true;
     partition.matches_descendants = true;
 

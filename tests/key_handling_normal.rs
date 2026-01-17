@@ -3,8 +3,8 @@ use crossterm::event::KeyCode;
 
 #[test]
 fn down_moves_selection() {
-    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
-    partitions.push(Partition::new("B".to_string(), vec![1], 0));
+    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0, 1)];
+    partitions.push(Partition::new("B".to_string(), vec![1], 0, 1));
     let store = LineStore::new(vec!["a".to_string(), "b".to_string()]);
     let rows = flatten_partitions(&partitions, &store, None, 0);
     let mut state = UiState::new();
@@ -16,7 +16,7 @@ fn down_moves_selection() {
 
 #[test]
 fn e_expands_selected_row() {
-    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
+    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0, 1)];
     let store = LineStore::new(vec!["a".to_string()]);
     let rows = flatten_partitions(&partitions, &store, None, 0);
     let mut state = UiState::new();
@@ -28,7 +28,7 @@ fn e_expands_selected_row() {
 
 #[test]
 fn c_collapses_selected_row() {
-    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
+    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0, 1)];
     partitions[0].expanded = true;
     let store = LineStore::new(vec!["a".to_string()]);
     let rows = flatten_partitions(&partitions, &store, None, 0);
@@ -41,7 +41,7 @@ fn c_collapses_selected_row() {
 
 #[test]
 fn right_scrolls_horizontally() {
-    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
+    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0, 1)];
     let store = LineStore::new(vec!["a".to_string()]);
     let rows = flatten_partitions(&partitions, &store, None, 0);
     let mut state = UiState::new();
@@ -53,7 +53,7 @@ fn right_scrolls_horizontally() {
 
 #[test]
 fn left_scrolls_horizontally_but_not_below_zero() {
-    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
+    let mut partitions = vec![Partition::new("A".to_string(), vec![0], 0, 1)];
     let store = LineStore::new(vec!["a".to_string()]);
     let rows = flatten_partitions(&partitions, &store, None, 0);
     let mut state = UiState::new();

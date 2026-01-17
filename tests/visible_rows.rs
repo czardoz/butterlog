@@ -2,12 +2,14 @@ use butterlog::{flatten_partitions, LineStore, Partition, RowKind, RowPath};
 
 #[test]
 fn flattens_only_expanded_children() {
-    let mut root = Partition::new("ROOT".to_string(), vec![0], 0);
+    let mut root = Partition::new("ROOT".to_string(), vec![0], 0, 4);
     root.expanded = true;
-    root.children.push(Partition::new("A".to_string(), vec![1], 1));
-    root.children.push(Partition::new("B".to_string(), vec![2], 1));
+    root.children
+        .push(Partition::new("A".to_string(), vec![1], 1, 1));
+    root.children
+        .push(Partition::new("B".to_string(), vec![2], 1, 1));
 
-    let mut other = Partition::new("OTHER".to_string(), vec![3], 0);
+    let mut other = Partition::new("OTHER".to_string(), vec![3], 0, 5);
     other.expanded = false;
 
     let store = LineStore::new(vec![

@@ -7,7 +7,7 @@ use tempfile::NamedTempFile;
 #[test]
 fn app_model_initializes_rows_and_ui() {
     let store = LineStore::new(vec!["line".to_string()]);
-    let partitions = vec![Partition::new("A".to_string(), vec![0], 0)];
+    let partitions = vec![Partition::new("A".to_string(), vec![0], 0, 1)];
     let temp = NamedTempFile::new().expect("temp file");
     let loader = LineLoader::open(temp.path()).expect("loader");
     let load_state = LoadState::new(loader, LoadConfig::default());

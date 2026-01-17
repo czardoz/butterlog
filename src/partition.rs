@@ -5,8 +5,11 @@ use crate::prefix_of;
 #[derive(Debug, Clone)]
 pub struct Partition {
     pub prefix: String,
+    pub prefix_len: usize,
     pub line_indices: Vec<usize>,
+    pub line_count: usize,
     pub children: Vec<Partition>,
+    pub child_index: HashMap<String, usize>,
     pub depth: usize,
     pub expanded: bool,
     pub matches_self: bool,
@@ -14,11 +17,15 @@ pub struct Partition {
 }
 
 impl Partition {
-    pub fn new(prefix: String, line_indices: Vec<usize>, depth: usize) -> Self {
+    pub fn new(prefix: String, line_indices: Vec<usize>, depth: usize, prefix_len: usize) -> Self {
+        let line_count = line_indices.len();
         Self {
             prefix,
+            prefix_len,
             line_indices,
+            line_count,
             children: Vec::new(),
+            child_index: HashMap::new(),
             depth,
             expanded: false,
             matches_self: false,
@@ -27,14 +34,25 @@ impl Partition {
     }
 
     pub fn line_count(&self) -> usize {
-        self.line_indices.len()
+        self.line_count
+    }
+
+    pub fn rebuild_child_index(&mut self) {
+        self.child_index.clear();
+        for (idx, child) in self.children.iter().enumerate() {
+            self.child_index.insert(child.prefix.clone(), idx);
+        }
     }
 }
 
-pub fn build_top_level_partitions(groups: Vec<crate::Group>, depth: usize) -> Vec<Partition> {
+pub fn build_top_level_partitions(
+    groups: Vec<crate::Group>,
+    depth: usize,
+    prefix_len: usize,
+) -> Vec<Partition> {
     groups
         .into_iter()
-        .map(|group| Partition::new(group.prefix, group.line_indices, depth))
+        .map(|group| Partition::new(group.prefix, group.line_indices, depth, prefix_len))
         .collect()
 }
 
@@ -71,8 +89,11 @@ pub fn split_partition(
 
     partition.children = groups
         .into_iter()
-        .map(|(prefix, indices)| Partition::new(prefix, indices, partition.depth + 1))
+        .map(|(prefix, indices)| {
+            Partition::new(prefix, indices, partition.depth + 1, candidate_len)
+        })
         .collect();
+    partition.rebuild_child_index();
 
     for child in &mut partition.children {
         split_partition(child, lines, candidate_len, target_size);

@@ -10,7 +10,7 @@ fn splits_large_partitions_with_longer_prefixes() {
     ];
 
     let groups = group_by_prefix(&lines, 3);
-    let mut partitions = build_top_level_partitions(groups, 0);
+    let mut partitions = build_top_level_partitions(groups, 0, 3);
 
     for partition in &mut partitions {
         split_partition(partition, &lines, 3, 2);
@@ -36,7 +36,7 @@ fn splits_when_next_prefix_is_same_but_longer_differs() {
         "ABC1z".to_string(),
     ];
 
-    let mut partitions = vec![Partition::new("ABC".to_string(), vec![0, 1, 2], 0)];
+    let mut partitions = vec![Partition::new("ABC".to_string(), vec![0, 1, 2], 0, 3)];
 
     split_partition(&mut partitions[0], &lines, 3, 1);
 
