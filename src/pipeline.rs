@@ -8,7 +8,7 @@ use crate::{
 
 pub const DEFAULT_SCREEN_HEIGHT: u16 = 24;
 pub const SAMPLE_LINE_LIMIT: usize = 5000;
-const MIN_PARTITION_LINES: usize = 80;
+const MIN_PARTITION_LINES: usize = 250;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PartitionPlan {
