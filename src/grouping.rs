@@ -28,3 +28,31 @@ pub fn group_by_prefix(lines: &[String], prefix_len: usize) -> Vec<Group> {
 
     groups
 }
+
+pub fn merge_small_groups(mut groups: Vec<Group>, min_lines: usize) -> Vec<Group> {
+    if groups.is_empty() {
+        return groups;
+    }
+
+    let mut merged: Vec<Group> = Vec::with_capacity(groups.len());
+    let mut prev_merged = false;
+
+    for group in groups.drain(..) {
+        if merged.is_empty() {
+            merged.push(group);
+            prev_merged = false;
+            continue;
+        }
+
+        if group.line_indices.len() < min_lines && !prev_merged {
+            let last = merged.last_mut().expect("last group");
+            last.line_indices.extend(group.line_indices);
+            prev_merged = true;
+        } else {
+            merged.push(group);
+            prev_merged = false;
+        }
+    }
+
+    merged
+}

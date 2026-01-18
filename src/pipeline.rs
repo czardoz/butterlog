@@ -2,12 +2,13 @@ use std::path::Path;
 
 use crate::{
     average_line_len, build_top_level_partitions, estimate_total_lines, file_size_bytes,
-    group_by_prefix, split_partition, AppResult, Group, LineLoader, LineSample, LineStore,
-    LoadConfig, LoadState, Partition,
+    group_by_prefix, merge_small_groups, split_partition, AppResult, Group, LineLoader, LineSample,
+    LineStore, LoadConfig, LoadState, Partition,
 };
 
 pub const DEFAULT_SCREEN_HEIGHT: u16 = 24;
 pub const SAMPLE_LINE_LIMIT: usize = 5000;
+const MIN_PARTITION_LINES: usize = 80;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PartitionPlan {
@@ -68,6 +69,7 @@ pub fn build_partitions_from_file(
     if groups.len() < target_partitions {
         groups = split_groups_to_target(groups, target_partitions);
     }
+    let groups = merge_small_groups(groups, MIN_PARTITION_LINES);
     let mut partitions = build_top_level_partitions(groups, 0, plan.top_prefix_len);
 
     for partition in &mut partitions {
